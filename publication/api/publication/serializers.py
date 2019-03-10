@@ -53,3 +53,7 @@ class CommentCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = ('id', 'parent', 'body')
+
+
+class VoteSerializer(serializers.Serializer):
+    value = serializers.BooleanField()
