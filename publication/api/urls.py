@@ -1,19 +1,13 @@
 from django.urls import path, include
-from rest_framework.urlpatterns import format_suffix_patterns
 
-from .views import api_root
-from .publication.views import ArticleList, ArticleDetail, CommentList, CommentDetail, ArticleVote, CommentVote
+from . import views
 
 
 urlpatterns = [
-    path('article/', ArticleList.as_view(), name='article-list'),
-    path('article/<int:pk>', ArticleDetail.as_view(), name='article-detail'),
-    path('article/<int:pk>/vote', ArticleVote.as_view()),
-    path('article/<int:article_pk>/comments/',
-         CommentList.as_view()),
-    path('comment/<int:pk>', CommentDetail.as_view(), name='comment-detail'),
-    path('comment/<int:pk>/vote', CommentVote.as_view()),
-    path('', api_root),
+    path('articles/', views.ArticleList.as_view(), name='article-list'),
+    path('articles/<int:pk>/', views.ArticleDetail.as_view(), name='article-detail'),
+    path('articles/<int:pk>/vote/', views.ArticleVote.as_view()),
+    path('articles/<int:article_pk>/comments/', views.CommentList.as_view()),
+    path('comments/<int:pk>/', views.CommentDetail.as_view(), name='comment-detail'),
+    path('comments/<int:pk>/vote/', views.CommentVote.as_view()),
 ]
-
-urlpatterns = format_suffix_patterns(urlpatterns)

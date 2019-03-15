@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from publication.models import Article, Comment
+from publication import models
 
 
 class BasePublicationSerializer(serializers.ModelSerializer):
@@ -13,28 +13,28 @@ class BasePublicationSerializer(serializers.ModelSerializer):
 
 class ArticleListSerializer(BasePublicationSerializer):
     class Meta:
-        model = Article
+        model = models.Article
         fields = ('id', 'headline', 'thumbnail', 'description',
                   'rating',  'author', 'categories', 'creation_date')
 
 
 class ArticleDetailSerializer(BasePublicationSerializer):
     class Meta:
-        model = Article
+        model = models.Article
         fields = ('id', 'headline', 'thumbnail', 'description', 'body', 'rating',
                   'author', 'themes', 'categories', 'creation_date', 'update_date')
 
 
 class ArticleCreateSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Article
+        model = models.Article
         fields = ('id', 'headline', 'thumbnail', 'description',
                   'body', 'themes', 'categories')
 
 
 class CommentSerializer(BasePublicationSerializer):
     class Meta:
-        model = Comment
+        model = models.Comment
         fields = ('id', 'article', 'parent', 'author', 'rating', 'body',
                   'creation_date', 'update_date')
         read_only_fields = ('article', 'parent')
@@ -42,16 +42,16 @@ class CommentSerializer(BasePublicationSerializer):
 
 class CommentCreateSerializer(serializers.ModelSerializer):
     parent = serializers.PrimaryKeyRelatedField(
-        queryset=Comment.objects.all(), required=False)
+        queryset=models.Comment.objects.all(), required=False)
 
     def validate_parent(self, parent):
-        if Comment.objects.get(pk=parent.id).article_id != self.context['article_id']:
+        if models.Comment.objects.get(pk=parent.id).article_id != self.context['article_id']:
             raise serializers.ValidationError(
                 "The parent comment must belong to the current article")
         return parent
 
     class Meta:
-        model = Comment
+        model = models.Comment
         fields = ('id', 'parent', 'body')
 
 

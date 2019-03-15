@@ -1,3 +1,2 @@
-from .classification import Theme, Category, ThemePreference, CategoryPreference
-from .publication import Article, Comment, ArticleVote, CommentVote
-from .account import Profile
+from .publication import Article, Comment, Theme, Category, ArticleVote, CommentVote
+from .account import Profile, ThemePreference, CategoryPreference

@@ -2,7 +2,24 @@ from django.db import models
 from django.db.models import Q, Count
 from django.contrib.auth.models import User
 
-from .classification import Theme, Category
+
+class BaseTag(models.Model):
+    label = models.CharField(max_length=50, blank=False, unique=True)
+    description = models.TextField(blank=True)
+
+    def __str__(self):
+        return '%s %s' % (str(self.id), self.label)
+
+    class Meta:
+        abstract = True
+
+
+class Theme(BaseTag):
+    pass
+
+
+class Category(BaseTag):
+    pass
 
 
 class PublicationQuerySet(models.QuerySet):
@@ -30,8 +47,8 @@ class BasePublication(models.Model):
 class Article(BasePublication):
     headline = models.CharField(max_length=150, blank=False)
     description = models.CharField(max_length=350, blank=True)
-    thumbnail = models.ImageField(
-        upload_to='thumbnails/%Y/%m/%d/', null=True, blank=True)
+    thumbnail = models.ImageField(upload_to='thumbnails/%Y/%m/%d/',
+                                  null=True, blank=True)
     themes = models.ManyToManyField(Theme)
     categories = models.ManyToManyField(Category)
 
@@ -42,7 +59,8 @@ class Article(BasePublication):
 class Comment(BasePublication):
     article = models.ForeignKey(Article, on_delete=models.CASCADE)
     parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True,
-                               related_name='reply_set', related_query_name='reply')
+                               related_name='reply_set',
+                               related_query_name='reply')
 
     def __str__(self):
         return super().__str__()
@@ -61,7 +79,8 @@ class BaseVote(models.Model):
 
 class ArticleVote(BaseVote):
     article = models.ForeignKey(Article, on_delete=models.CASCADE,
-                                related_name='vote_set', related_query_name='vote')
+                                related_name='vote_set',
+                                related_query_name='vote')
 
     def __str__(self):
         return '%s %s' % (super().__str__(), str(self.article))
@@ -73,7 +92,8 @@ class ArticleVote(BaseVote):
 
 class CommentVote(BaseVote):
     comment = models.ForeignKey(Comment, on_delete=models.CASCADE,
-                                related_name='vote_set', related_query_name='vote')
+                                related_name='vote_set',
+                                related_query_name='vote')
 
     def __str__(self):
         return '%s %s' % (super().__str__(), str(self.comment))
