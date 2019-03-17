@@ -7,3 +7,10 @@ class IsAuthorOrReadOnly(permissions.BasePermission):
             return True
 
         return obj.author == request.user
+
+
+class IsCurrentUserProfileOrReadOnly(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        return request.user.profile.id == request.resolver_match.kwargs.get('pk')

@@ -7,7 +7,7 @@ from django.shortcuts import get_object_or_404
 
 from publication import models
 from . import serializers
-from .permissions import IsAuthorOrReadOnly
+from .permissions import IsAuthorOrReadOnly, IsCurrentUserProfileOrReadOnly
 
 
 class ArticleList(generics.ListCreateAPIView):
@@ -87,3 +87,98 @@ class ArticleVote(BaseVote):
 
 class CommentVote(BaseVote):
     model = models.Comment
+
+
+class ThemeList(generics.ListCreateAPIView):
+    queryset = models.Theme.objects.all()
+    serializer_class = serializers.ThemeSerializer
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+
+
+class CategoryList(generics.ListAPIView):
+    queryset = models.Category.objects.all()
+    serializer_class = serializers.CategorySerializer
+
+
+class ProfileDetail(generics.RetrieveUpdateAPIView):
+    queryset = models.Profile.objects.all()
+    serializer_class = serializers.ProfileSerializer
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,
+                          IsCurrentUserProfileOrReadOnly)
+
+
+class ProfileFollowers(views.APIView):
+    def get(self, request, *args, **kwargs):
+        profile = get_object_or_404(models.Profile, pk=kwargs['pk'])
+        queryset = models.Profile.objects.filter(
+            id__in=profile.follower_set.all())
+        serializer = serializers.ProfileSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+
+class ProfileFollows(views.APIView):
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,
+                          IsCurrentUserProfileOrReadOnly)
+
+    def get(self, request, *args, **kwargs):
+        profile = get_object_or_404(models.Profile, pk=kwargs['pk'])
+        queryset = profile.follows
+        serializer = serializers.ProfileSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def post(self, request, *args, **kwargs):
+        profile = get_object_or_404(models.Profile, pk=kwargs['pk'])
+        serializer = serializers.ProfileFollowSerializer(data=request.data)
+        if serializer.is_valid():
+            profile.follows.add(serializer.data['to_profile'])
+            return Response(status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, *args, **kwargs):
+        profile = get_object_or_404(models.Profile, pk=kwargs['pk'])
+        serializer = serializers.ProfileFollowSerializer(data=request.data)
+        if serializer.is_valid():
+            profile.follows.remove(serializer.data['to_profile'])
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class BaseProfilePreferences(views.APIView):
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,
+                          IsCurrentUserProfileOrReadOnly)
+
+    def get(self, request, *args, **kwargs):
+        profile = get_object_or_404(models.Profile, pk=kwargs['pk'])
+        queryset = self.model.objects.filter(profile=profile)
+        serializer = self.serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def post(self, request, *args, **kwargs):
+        profile = get_object_or_404(models.Profile, pk=kwargs['pk'])
+        serializer = self.serializer(data=request.data)
+        if serializer.is_valid():
+            if not self.value_model.objects.filter(preference__profile=profile).exists():
+                self.model.objects.create(profile=profile, **serializer.data)
+            return Response(status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, *args, **kwargs):
+        profile = get_object_or_404(models.Profile, pk=kwargs['pk'])
+        serializer = self.serializer(data=request.data)
+        if serializer.is_valid():
+            self.model.objects.filter(profile=profile,
+                                      **serializer.data).delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ProfileThemePreferences(BaseProfilePreferences):
+    model = models.ThemePreference
+    value_model = models.Theme
+    serializer = serializers.ThemePreferenceSerializer
+
+
+class ProfileCategoryPreferences(BaseProfilePreferences):
+    model = models.CategoryPreference
+    value_model = models.Category
+    serializer = serializers.CategoryPreferenceSerializer

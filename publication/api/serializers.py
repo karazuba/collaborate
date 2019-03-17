@@ -57,3 +57,54 @@ class CommentCreateSerializer(serializers.ModelSerializer):
 
 class VoteSerializer(serializers.Serializer):
     value = serializers.BooleanField()
+
+
+class ThemeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Theme
+        fields = ('id', 'label', 'description')
+
+
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Category
+        fields = ('id', 'label', 'description')
+
+
+class ProfileSerializer(serializers.ModelSerializer):
+    user = serializers.ReadOnlyField(source='user.username')
+
+    class Meta:
+        model = models.Profile
+        fields = ('id', 'user', 'bio', 'followers_count',
+                  'article_rating', 'comment_rating')
+
+
+class ProfileFollowSerializer(serializers.Serializer):
+    to_profile = serializers.IntegerField(required=True)
+
+    def validate_to_profile(self, to_profile):
+        if not models.Profile.objects.filter(pk=to_profile).exists():
+            raise serializers.ValidationError(
+                "This field must be assosiated with an existing user")
+        return to_profile
+
+
+class ThemePreferenceSerializer(serializers.ModelSerializer):
+    theme_id = serializers.PrimaryKeyRelatedField(
+        queryset=models.Theme.objects.all())
+
+    class Meta:
+        model = models.ThemePreference
+        fields = ('theme_id', 'display', 'profile')
+        read_only_fields = ('profile',)
+
+
+class CategoryPreferenceSerializer(serializers.ModelSerializer):
+    category_id = serializers.PrimaryKeyRelatedField(
+        queryset=models.Category.objects.all())
+
+    class Meta:
+        model = models.CategoryPreference
+        fields = ('category_id', 'display', 'profile')
+        read_only_fields = ('profile',)
