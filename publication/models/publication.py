@@ -1,5 +1,6 @@
 from django.db import models
-from django.db.models import Q, Count
+from django.db.models import Q, Count, Subquery, F, ExpressionWrapper
+from django.db.models.functions import Cast, Now
 from django.contrib.auth.models import User
 
 
@@ -22,11 +23,45 @@ class Category(BaseTag):
     pass
 
 
-class PublicationQuerySet(models.QuerySet):
+class BasePublicationQuerySet(models.QuerySet):
     def with_rating(self):
         upvotes = Count('vote', filter=Q(vote__value=True))
         downvotes = Count('vote', filter=Q(vote__value=False))
         return self.annotate(rating=upvotes-downvotes)
+
+
+class ArticleQuerySet(BasePublicationQuerySet):
+    def with_popularity(self):
+        hours = Cast(Now() - F('creation_date'), models.FloatField()) \
+            / 3600000000 + 1
+        return self.annotate(popularity=ExpressionWrapper(F('rating')/hours, output_field=models.FloatField()))
+
+    def exclude_preferences(self, profile):
+        ignored_themes = Theme.objects.filter(preference__profile=profile,
+                                              preference__display=False) \
+            .values_list('id', flat=True)
+        ignored_categories = Category.objects.filter(preference__profile=profile,
+                                                     preference__display=False) \
+            .values_list('id', flat=True)
+        return self.exclude(themes__in=Subquery(ignored_themes)) \
+            .exclude(categories__in=Subquery(ignored_categories))
+
+    def filter_follows(self, profile):
+        return self.filter(author__profile__in=profile.follows.all())
+
+    def filter_preferences(self, profile):
+        followed_themes = Theme.objects.filter(preference__profile=profile,
+                                               preference__display=True) \
+            .values_list('id', flat=True)
+        followed_categories = Category.objects.filter(preference__profile=profile,
+                                                      preference__display=True) \
+            .values_list('id', flat=True)
+        return self.filter(themes__in=Subquery(followed_themes),
+                           categories__in=Subquery(followed_categories))
+
+
+class CommentQuerySet(BasePublicationQuerySet):
+    pass
 
 
 class BasePublication(models.Model):
@@ -34,8 +69,6 @@ class BasePublication(models.Model):
     creation_date = models.DateTimeField(auto_now_add=True)
     update_date = models.DateTimeField(null=True, auto_now=True)
     author = models.ForeignKey(User, on_delete=models.CASCADE)
-
-    objects = PublicationQuerySet.as_manager()
 
     def __str__(self):
         return '%s %s' % (str(self.id), str(self.author))
@@ -52,6 +85,8 @@ class Article(BasePublication):
     themes = models.ManyToManyField(Theme)
     categories = models.ManyToManyField(Category)
 
+    objects = ArticleQuerySet.as_manager()
+
     def __str__(self):
         return '%s %s' % (super().__str__(), self.headline)
 
@@ -61,6 +96,8 @@ class Comment(BasePublication):
     parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True,
                                related_name='reply_set',
                                related_query_name='reply')
+
+    objects = CommentQuerySet.as_manager()
 
     def __str__(self):
         return super().__str__()

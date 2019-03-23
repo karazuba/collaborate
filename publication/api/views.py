@@ -1,20 +1,33 @@
 from rest_framework import generics
-from rest_framework import permissions
 from rest_framework import views
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.filters import OrderingFilter
+from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
 
-from publication import models
+from .. import models
 from . import serializers
-from .permissions import IsAuthorOrReadOnly, IsCurrentUserProfileOrReadOnly
+from . import permissions
+from . import filters
 
 
-class ArticleList(generics.ListCreateAPIView):
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+class BaseFeed:
+    filter_backends = (DjangoFilterBackend, OrderingFilter)
+    filterset_class = filters.ArticleFilter
+    ordering_fields = ('creation_date', 'rating', 'popularity')
+    ordering = ('-popularity',)
+
+
+class ArticleList(BaseFeed, generics.ListCreateAPIView):
+    permission_classes = (IsAuthenticatedOrReadOnly,)
 
     def get_queryset(self):
-        return models.Article.objects.with_rating()
+        qs = models.Article.objects.with_rating().with_popularity()
+        if hasattr(self.request.user, 'profile'):
+            qs = qs.exclude_preferences(self.request.user.profile)
+        return qs
 
     def get_serializer_class(self):
         if self.request.method == 'POST':
@@ -27,27 +40,30 @@ class ArticleList(generics.ListCreateAPIView):
 
 class ArticleDetail(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = serializers.ArticleDetailSerializer
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,
-                          IsAuthorOrReadOnly)
+    permission_classes = (IsAuthenticatedOrReadOnly,
+                          permissions.IsAuthorOrReadOnly)
 
     def get_queryset(self):
         return models.Article.objects.with_rating()
 
 
-class CommentList(views.APIView):
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+class ArticleComments(views.APIView):
+    filter_backends = (OrderingFilter,)
+    ordering_fields = ('creation_date', 'rating')
+    ordering = ('-rating',)
+    permission_classes = (IsAuthenticatedOrReadOnly,)
 
     def get(self, request, *args, **kwargs):
-        article = get_object_or_404(models.Article, pk=kwargs['article_pk'])
+        article = get_object_or_404(models.Article, pk=kwargs['pk'])
         parent_id = self.request.query_params.get('parent_id', None)
         queryset = models.Comment.objects.filter(article=article,
-                                                 parent_id=parent_id)
+                                                 parent_id=parent_id).with_rating()
         serializer = serializers.CommentSerializer(queryset, many=True,
                                                    context={'request': request})
         return Response(serializer.data)
 
     def post(self, request, *args, **kwargs):
-        article = get_object_or_404(models.Article, pk=kwargs['article_pk'])
+        article = get_object_or_404(models.Article, pk=kwargs['pk'])
         serializer = serializers.CommentCreateSerializer(data=request.data,
                                                          context={'article_id': article.id})
         if serializer.is_valid():
@@ -58,15 +74,15 @@ class CommentList(views.APIView):
 
 class CommentDetail(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = serializers.CommentSerializer
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,
-                          IsAuthorOrReadOnly)
+    permission_classes = (IsAuthenticatedOrReadOnly,
+                          permissions.IsAuthorOrReadOnly)
 
     def get_queryset(self):
         return models.Comment.objects.with_rating()
 
 
 class BaseVote(views.APIView):
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (IsAuthenticated,)
 
     def post(self, request, *args, **kwargs):
         obj = get_object_or_404(self.model, pk=kwargs['pk'])
@@ -92,7 +108,7 @@ class CommentVote(BaseVote):
 class ThemeList(generics.ListCreateAPIView):
     queryset = models.Theme.objects.all()
     serializer_class = serializers.ThemeSerializer
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+    permission_classes = (IsAuthenticatedOrReadOnly,)
 
 
 class CategoryList(generics.ListAPIView):
@@ -103,8 +119,8 @@ class CategoryList(generics.ListAPIView):
 class ProfileDetail(generics.RetrieveUpdateAPIView):
     queryset = models.Profile.objects.all()
     serializer_class = serializers.ProfileSerializer
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,
-                          IsCurrentUserProfileOrReadOnly)
+    permission_classes = (IsAuthenticatedOrReadOnly,
+                          permissions.IsCurrentUserProfileOrReadOnly)
 
 
 class ProfileFollowers(views.APIView):
@@ -117,8 +133,8 @@ class ProfileFollowers(views.APIView):
 
 
 class ProfileFollows(views.APIView):
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,
-                          IsCurrentUserProfileOrReadOnly)
+    permission_classes = (IsAuthenticatedOrReadOnly,
+                          permissions.IsCurrentUserProfileOrReadOnly)
 
     def get(self, request, *args, **kwargs):
         profile = get_object_or_404(models.Profile, pk=kwargs['pk'])
@@ -144,8 +160,8 @@ class ProfileFollows(views.APIView):
 
 
 class BaseProfilePreferences(views.APIView):
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,
-                          IsCurrentUserProfileOrReadOnly)
+    permission_classes = (IsAuthenticatedOrReadOnly,
+                          permissions.IsCurrentUserProfileOrReadOnly)
 
     def get(self, request, *args, **kwargs):
         profile = get_object_or_404(models.Profile, pk=kwargs['pk'])
@@ -182,3 +198,24 @@ class ProfileCategoryPreferences(BaseProfilePreferences):
     model = models.CategoryPreference
     value_model = models.Category
     serializer = serializers.CategoryPreferenceSerializer
+
+
+class FollowFeed(BaseFeed, generics.ListAPIView):
+    ordering = ('creation_date',)
+    serializer_class = serializers.ArticleListSerializer
+    permission_classes = (IsAuthenticated,)
+
+    def get_queryset(self):
+        profile = self.request.user.profile
+        return models.Article.objects.exclude_preferences(profile) \
+            .filter_follows(profile).with_rating().with_popularity()
+
+
+class InterestFeed(BaseFeed, generics.ListAPIView):
+    serializer_class = serializers.ArticleListSerializer
+    permission_classes = (IsAuthenticated,)
+
+    def get_queryset(self):
+        profile = self.request.user.profile
+        return models.Article.objects.exclude_preferences(profile) \
+            .filter_preferences(profile).with_rating().with_popularity()

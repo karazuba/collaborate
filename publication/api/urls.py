@@ -7,7 +7,7 @@ urlpatterns = [
     path('articles/', views.ArticleList.as_view(), name='article-list'),
     path('articles/<int:pk>/', views.ArticleDetail.as_view(), name='article-detail'),
     path('articles/<int:pk>/vote/', views.ArticleVote.as_view()),
-    path('articles/<int:article_pk>/comments/', views.CommentList.as_view()),
+    path('articles/<int:pk>/comments/', views.ArticleComments.as_view()),
     path('comments/<int:pk>/', views.CommentDetail.as_view(), name='comment-detail'),
     path('comments/<int:pk>/vote/', views.CommentVote.as_view()),
     path('themes/', views.ThemeList.as_view(), name='theme-list'),
@@ -19,4 +19,6 @@ urlpatterns = [
          views.ProfileThemePreferences.as_view()),
     path('profiles/<int:pk>/preferences/categories/',
          views.ProfileCategoryPreferences.as_view()),
+    path('feed/follows/', views.FollowFeed.as_view()),
+    path('feed/interests/', views.InterestFeed.as_view()),
 ]
