@@ -1,24 +1,16 @@
-from django.urls import path, include
+from django.urls import path
 
-from . import views
-
+from publication.api.views import (ArticleDetail, ArticleList, ArticleVote,
+                                   CategoryList, CommentDetail, CommentsList,
+                                   CommentVote, ThemeList)
 
 urlpatterns = [
-    path('articles/', views.ArticleList.as_view(), name='article-list'),
-    path('articles/<int:pk>/', views.ArticleDetail.as_view(), name='article-detail'),
-    path('articles/<int:pk>/vote/', views.ArticleVote.as_view()),
-    path('articles/<int:pk>/comments/', views.ArticleComments.as_view()),
-    path('comments/<int:pk>/', views.CommentDetail.as_view(), name='comment-detail'),
-    path('comments/<int:pk>/vote/', views.CommentVote.as_view()),
-    path('themes/', views.ThemeList.as_view(), name='theme-list'),
-    path('categories/', views.CategoryList.as_view(), name='category-list'),
-    path('profiles/<int:pk>/', views.ProfileDetail.as_view(), name='profile-detail'),
-    path('profiles/<int:pk>/followers/', views.ProfileFollowers.as_view()),
-    path('profiles/<int:pk>/follows/', views.ProfileFollows.as_view()),
-    path('profiles/<int:pk>/preferences/themes/',
-         views.ProfileThemePreferences.as_view()),
-    path('profiles/<int:pk>/preferences/categories/',
-         views.ProfileCategoryPreferences.as_view()),
-    path('feed/follows/', views.FollowFeed.as_view()),
-    path('feed/interests/', views.InterestFeed.as_view()),
+    path('articles/', ArticleList.as_view()),
+    path('articles/<int:pk>/', ArticleDetail.as_view()),
+    path('articles/<int:pk>/vote/', ArticleVote.as_view()),
+    path('articles/<int:article_pk>/comments/', CommentsList.as_view()),
+    path('comments/<int:pk>/', CommentDetail.as_view()),
+    path('comments/<int:pk>/vote/', CommentVote.as_view()),
+    path('themes/', ThemeList.as_view()),
+    path('categories/', CategoryList.as_view()),
 ]

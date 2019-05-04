@@ -42,6 +42,8 @@ INSTALLED_APPS = [
     'djoser',
     'django_filters',
     'publication',
+    'account',
+    'feed',
 ]
 
 MIDDLEWARE = [
@@ -129,17 +131,12 @@ STATIC_URL = '/static/'
 
 
 REST_FRAMEWORK = {
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 10,
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.TokenAuthentication',
     ),
-}
-
-
-DJOSER = {
-    'SERIALIZERS': {
-        'user': 'collaborate.serializers.UserSerializer',
-        'current_user': 'collaborate.serializers.CurrentUserSerializer',
-    },
+    'DEFAULT_FILTER_BACKENDS': (
+        'django_filters.rest_framework.DjangoFilterBackend',
+    ),
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10,
 }
