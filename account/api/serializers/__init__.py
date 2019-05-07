@@ -1,5 +1,5 @@
-from .preference import (CategoryPreferenceReadSerializer,
-                         CategoryPreferenceWriteSerializer,
-                         ThemePreferenceReadSerializer,
-                         ThemePreferenceWriteSerializer)
-from .profile import ProfileFollowSerializer, ProfileSerializer
+from .preference import (BasicPreferenceSerializer,
+                         CategoryPreferenceReadSerializer,
+                         ProfilePreferenceReadSerializer,
+                         ThemePreferenceReadSerializer)
+from .profile import ProfileSerializer

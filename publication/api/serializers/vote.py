@@ -1,5 +1,5 @@
 from rest_framework import serializers
 
 
-class VoteSerializer(serializers.Serializer):
+class BasicVoteSerializer(serializers.Serializer):
     value = serializers.BooleanField()

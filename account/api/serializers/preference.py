@@ -1,8 +1,12 @@
 from rest_framework import serializers
 
-from account.models import CategoryPreference, ThemePreference
+from account.models import CategoryPreference, ThemePreference, ProfilePreference
 from publication.api.serializers.tag import CategorySerializer, ThemeSerializer
-from publication.models import Category, Theme
+from account.api.serializers.profile import ProfileSerializer
+
+
+class BasicPreferenceSerializer(serializers.Serializer):
+    display = serializers.BooleanField()
 
 
 class ThemePreferenceReadSerializer(serializers.ModelSerializer):
@@ -14,15 +18,6 @@ class ThemePreferenceReadSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
-class ThemePreferenceWriteSerializer(serializers.ModelSerializer):
-    theme_id = serializers.PrimaryKeyRelatedField(
-        queryset=Theme.objects.all())
-
-    class Meta:
-        model = ThemePreference
-        fields = ('theme_id', 'display')
-
-
 class CategoryPreferenceReadSerializer(serializers.ModelSerializer):
     category = CategorySerializer()
 
@@ -32,10 +27,9 @@ class CategoryPreferenceReadSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
-class CategoryPreferenceWriteSerializer(serializers.ModelSerializer):
-    category_id = serializers.PrimaryKeyRelatedField(
-        queryset=Category.objects.all())
+class ProfilePreferenceReadSerializer(serializers.ModelSerializer):
+    subject_profile = ProfileSerializer
 
     class Meta:
-        model = CategoryPreference
-        fields = ('category_id', 'display')
+        model = ProfilePreference
+        fields = ('profile', 'subject_profile', 'display')

@@ -1,109 +1,93 @@
-from django.shortcuts import get_object_or_404
 from rest_framework import generics, status, views
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from rest_framework.response import Response
+from django.core.exceptions import ObjectDoesNotExist
 
 from account.api.permissions import IsCurrentUserProfileOrReadOnly
-from account.api.serializers import (CategoryPreferenceReadSerializer,
-                                     CategoryPreferenceWriteSerializer,
-                                     ProfileFollowSerializer,
+from account.api.serializers import (BasicPreferenceSerializer,
+                                     CategoryPreferenceReadSerializer,
+                                     ProfilePreferenceReadSerializer,
                                      ProfileSerializer,
-                                     ThemePreferenceReadSerializer,
-                                     ThemePreferenceWriteSerializer)
-from account.models import CategoryPreference, Profile, ThemePreference
-from publication.models import Category, Theme
+                                     ThemePreferenceReadSerializer)
+from account.models import (CategoryPreference, Profile, ProfilePreference,
+                            ThemePreference)
+from common.views import UrlMixin
 
 
 class ProfileList(generics.ListAPIView):
-    queryset = Profile.objects.all()
+    queryset = Profile.objects.with_rating().with_followers_count()
     serializer_class = ProfileSerializer
 
 
 class ProfileDetail(generics.RetrieveUpdateAPIView):
-    queryset = Profile.objects.all()
+    queryset = Profile.objects.with_rating().with_followers_count()
     serializer_class = ProfileSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,
                           IsCurrentUserProfileOrReadOnly)
 
 
-class ProfileFollowers(views.APIView):
-    def get(self, request, *args, **kwargs):
-        profile = get_object_or_404(Profile, pk=kwargs['pk'])
-        queryset = Profile.objects.filter(
-            id__in=profile.follower_set.all())
-        serializer = ProfileSerializer(queryset, many=True)
-        return Response(serializer.data)
+class ProfileUrlMixin(UrlMixin):
+    model_class = Profile
 
 
-class ProfileFollows(views.APIView):
-    permission_classes = (IsAuthenticatedOrReadOnly,
-                          IsCurrentUserProfileOrReadOnly)
+class ProfileFollowers(ProfileUrlMixin, generics.ListAPIView):
+    serializer_class = ProfileSerializer
 
-    def get(self, request, *args, **kwargs):
-        profile = get_object_or_404(Profile, pk=kwargs['pk'])
-        queryset = profile.follows
-        serializer = ProfileSerializer(queryset, many=True)
-        return Response(serializer.data)
+    def get_queryset(self):
+        return Profile.objects.with_rating().with_followers_count() \
+            .filter(profilepreference__subject_profile=self.profile,
+                    profilepreference__display=True)
+
+
+class BaseChangePreference(views.APIView):
+    attr_name = None
+    permission_classes = (IsAuthenticated,)
 
     def post(self, request, *args, **kwargs):
-        profile = get_object_or_404(Profile, pk=kwargs['pk'])
-        serializer = ProfileFollowSerializer(data=request.data)
+        serializer = BasicPreferenceSerializer(data=request.data)
         if serializer.is_valid():
-            profile.follows.add(serializer.data['profile_id'])
+            new_display = serializer.data['display']
+            preference, created = getattr(self, self.attr_name).preference_set. \
+                get_or_create(profile=request.user.profile,
+                              defaults={'display': new_display})
+            if not created and preference.display != new_display:
+                return Response(status=status.HTTP_409_CONFLICT)
             return Response(status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, *args, **kwargs):
-        profile = get_object_or_404(Profile, pk=kwargs['pk'])
-        serializer = ProfileFollowSerializer(data=request.data)
-        if serializer.is_valid():
-            profile.follows.remove(serializer.data['profile_id'])
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            preference = getattr(self, self.attr_name).preference_set. \
+                filter(profile=request.user.profile).get()
+        except ObjectDoesNotExist:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        preference.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class BaseProfilePreferences(views.APIView):
-    model_class = None
-    value_model_class = None
-    read_serializer_class = None
-    write_serializer_class = None
-    permission_classes = (IsAuthenticatedOrReadOnly,
-                          IsCurrentUserProfileOrReadOnly)
-
-    def get(self, request, *args, **kwargs):
-        profile = get_object_or_404(Profile, pk=kwargs['pk'])
-        queryset = self.model.objects.filter(profile=profile)
-        serializer = self.read_serializer_class(queryset, many=True)
-        return Response(serializer.data)
-
-    def post(self, request, *args, **kwargs):
-        profile = get_object_or_404(Profile, pk=kwargs['pk'])
-        serializer = self.write_serializer_class(data=request.data)
-        if serializer.is_valid():
-            if not self.value_model.objects.filter(preference__profile=profile).exists():
-                self.model.objects.create(profile=profile, **serializer.data)
-            return Response(status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def delete(self, request, *args, **kwargs):
-        profile = get_object_or_404(models.Profile, pk=kwargs['pk'])
-        serializer = self.write_serializer_class(data=request.data)
-        if serializer.is_valid():
-            self.model.objects.filter(profile=profile,
-                                      **serializer.data).delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+class ChangeProfilePreference(ProfileUrlMixin, BaseChangePreference):
+    pass
 
 
-class ProfileThemePreferences(BaseProfilePreferences):
-    model = ThemePreference
-    value_model = Theme
-    read_serializer_class = ThemePreferenceReadSerializer
-    write_serializer_class = ThemePreferenceWriteSerializer
+class ThemePreferenceList(ProfileUrlMixin, generics.ListAPIView):
+    serializer_class = ThemePreferenceReadSerializer
+    filterset_fields = ('display',)
+
+    def get_queryset(self):
+        return ThemePreference.objects.filter(profile=self.profile)
 
 
-class ProfileCategoryPreferences(BaseProfilePreferences):
-    model = CategoryPreference
-    value_model = Category
-    read_serializer_class = CategoryPreferenceReadSerializer
-    write_serializer_class = CategoryPreferenceWriteSerializer
+class CategoryPreferenceList(ProfileUrlMixin, generics.ListAPIView):
+    serializer_class = CategoryPreferenceReadSerializer
+    filterset_fields = ('display',)
+
+    def get_queryset(self):
+        return CategoryPreference.objects.filter(profile=self.profile)
+
+
+class ProfilePreferenceList(ProfileUrlMixin, generics.ListAPIView):
+    serializer_class = ProfilePreferenceReadSerializer
+    filterset_fields = ('display',)
+
+    def get_queryset(self):
+        return ProfilePreference.objects.filter(profile=self.profile)

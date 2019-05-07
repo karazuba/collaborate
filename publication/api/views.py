@@ -1,68 +1,51 @@
-from django.shortcuts import get_object_or_404
 from rest_framework import generics, status, views
 from rest_framework.permissions import (IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
 
+from account.api.views import BaseChangePreference
+from common.views import UrlMixin
 from publication.api.filters import ArticleFilterSet, CommentFilterSet
 from publication.api.permissions import IsAuthorOrReadOnly
 from publication.api.serializers import (ArticleListSerializer,
                                          ArticleReadSerializer,
                                          ArticleWriteSerializer,
+                                         BasicVoteSerializer,
                                          CategorySerializer,
                                          CommentCreateSerializer,
-                                         CommentSerializer, ThemeSerializer,
-                                         VoteSerializer)
+                                         CommentSerializer, ThemeSerializer)
 from publication.models import Article, Category, Comment, Theme
 
 
 class ArticleList(generics.ListCreateAPIView):
-    queryset = Article.objects.with_rating()
+    queryset = Article.objects.with_rating().with_popularity()
     permission_classes = (IsAuthenticatedOrReadOnly,)
     filter_class = ArticleFilterSet
 
     def get_serializer_class(self):
-        if self.request.method == 'POST':
-            return ArticleWriteSerializer
-        return ArticleListSerializer
+        if self.request.method == 'GET':
+            return ArticleListSerializer
+        return ArticleWriteSerializer
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
 
-class ArticleDetail(generics.RetrieveUpdateDestroyAPIView):
+class ArticleDetail(generics.RetrieveUpdateAPIView):
     queryset = Article.objects.with_rating()
     permission_classes = (IsAuthenticatedOrReadOnly, IsAuthorOrReadOnly)
 
     def get_serializer_class(self):
-        if self.request.method == 'POST':
-            return ArticleWriteSerializer
-        return ArticleReadSerializer
+        if self.request.method == 'GET':
+            return ArticleReadSerializer
+        return ArticleWriteSerializer
 
 
-class ArticleMixin:
-    article_url_kwarg = 'article_pk'
-
-    def __init__(self, *args, **kwargs):
-        return super().__init__(*args, **kwargs)
-        self.article = None
-
-    def initialize_request(self, request, *args, **kwargs):
-        request = super().initialize_request(request, *args, **kwargs)
-
-        if self.article_url_kwarg in self.kwargs:
-            article_pk = self.kwargs[self.article_url_kwarg]
-            self.article = get_object_or_404(Article, pk=article_pk)
-
-        return request
-
-    def get_serializer_context(self):
-        context = super().get_serializer_context()
-        context['article'] = self.article
-        return context
+class ArticleUrlMixin(UrlMixin):
+    model_class = Article
 
 
-class CommentsList(ArticleMixin, generics.ListCreateAPIView):
+class CommentsList(ArticleUrlMixin, generics.ListCreateAPIView):
     permission_classes = (IsAuthenticatedOrReadOnly,)
     filter_class = CommentFilterSet
 
@@ -73,9 +56,9 @@ class CommentsList(ArticleMixin, generics.ListCreateAPIView):
         return queryset
 
     def get_serializer_class(self):
-        if self.request.method == 'POST':
-            return CommentCreateSerializer
-        return CommentSerializer
+        if self.request.method == 'GET':
+            return CommentSerializer
+        return CommentCreateSerializer
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
@@ -87,29 +70,33 @@ class CommentDetail(generics.RetrieveUpdateAPIView):
     permission_classes = (IsAuthenticatedOrReadOnly, IsAuthorOrReadOnly)
 
 
-class BaseVote(views.APIView):
-    model = None
+class BaseMakeVote(views.APIView):
+    attr_name = None
     permission_classes = (IsAuthenticated,)
 
     def post(self, request, *args, **kwargs):
-        obj = get_object_or_404(self.model, pk=kwargs['pk'])
-        serializer = VoteSerializer(data=request.data)
+        serializer = BasicVoteSerializer(data=request.data)
         if serializer.is_valid():
             new_value = serializer.data['value']
-            vote, created = obj.vote_set.get_or_create(user=request.user,
-                                                       defaults={'value': new_value})
+            vote, created = getattr(self, self.attr_name).vote_set \
+                .get_or_create(user=request.user,
+                               defaults={'value': new_value})
             if not created and vote.value != new_value:
                 vote.delete()
             return Response(status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class ArticleVote(BaseVote):
-    model = Article
+class MakeArticleVote(ArticleUrlMixin, BaseMakeVote):
+    pass
 
 
-class CommentVote(BaseVote):
-    model = Comment
+class CommentUrlMixin(UrlMixin):
+    model_class = Comment
+
+
+class MakeCommentVote(CommentUrlMixin, BaseMakeVote):
+    pass
 
 
 class ThemeList(generics.ListCreateAPIView):
@@ -118,6 +105,22 @@ class ThemeList(generics.ListCreateAPIView):
     permission_classes = (IsAuthenticatedOrReadOnly,)
 
 
+class ThemeUrlMixin(UrlMixin):
+    model_class = Theme
+
+
+class ChangeThemePreference(ThemeUrlMixin, BaseChangePreference):
+    pass
+
+
 class CategoryList(generics.ListAPIView):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+
+
+class CategoryUrlMixin(UrlMixin):
+    model_class = Category
+
+
+class ChangeCategoryPreference(CategoryUrlMixin, BaseChangePreference):
+    pass

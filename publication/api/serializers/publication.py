@@ -1,12 +1,13 @@
 from rest_framework import serializers
 
 from account.api.serializers.profile import ProfileSerializer
+from common.serializers import CurrentValueDefault
 from publication.api.serializers.tag import CategorySerializer, ThemeSerializer
 from publication.models import Article, Comment
 
 
 class BasePublicationSerializer(serializers.ModelSerializer):
-    author = ProfileSerializer(source='author.profile')
+    author = ProfileSerializer(source='author.profile', read_only=True)
     rating = serializers.SerializerMethodField()
 
     def get_rating(self, obj):
@@ -14,10 +15,13 @@ class BasePublicationSerializer(serializers.ModelSerializer):
 
 
 class ArticleListSerializer(BasePublicationSerializer):
+    themes = ThemeSerializer(many=True, read_only=True)
+    categories = CategorySerializer(many=True, read_only=True)
+
     class Meta:
         model = Article
         fields = ('id', 'headline', 'thumbnail', 'description',
-                  'rating',  'author', 'creation_date')
+                  'rating',  'author', 'categories', 'themes', 'creation_date')
         read_only_fields = fields
 
 
@@ -28,15 +32,15 @@ class ArticleReadSerializer(BasePublicationSerializer):
     class Meta:
         model = Article
         fields = ('id', 'headline', 'thumbnail', 'description', 'body', 'rating',
-                  'author', 'themes', 'categories', 'creation_date', 'update_date')
+                  'author', 'categories', 'themes', 'creation_date', 'update_date')
         read_only_fields = fields
 
 
 class ArticleWriteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Article
-        fields = ('id', 'headline', 'thumbnail', 'description',
-                  'body', 'themes', 'categories')
+        fields = ('id', 'headline', 'thumbnail', 'description', 'body',
+                  'categories', 'themes', 'creation_date', 'update_date')
 
 
 class CommentSerializer(BasePublicationSerializer):
@@ -48,15 +52,8 @@ class CommentSerializer(BasePublicationSerializer):
                             'creation_date', 'update_date')
 
 
-class CurrentArticleDefault:
-    def set_context(self, serializer_field):
-        self.article = serializer_field.context['article']
-
-    def __call__(self):
-        return self.article
-
-    def __repr__(self):
-        return f'{self.__class__.__name__}()'
+class CurrentArticleDefault(CurrentValueDefault):
+    key = 'article'
 
 
 class CommentCreateSerializer(serializers.ModelSerializer):

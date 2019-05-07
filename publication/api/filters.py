@@ -13,19 +13,14 @@ class ArticleFilterSet(filters.FilterSet):
     themes = filters.ModelMultipleChoiceFilter(field_name='themes',
                                                queryset=Theme.objects.all(),
                                                conjoined=True)
+    created = filters.DateFromToRangeFilter(field_name='creation_date')
+    headline = filters.CharFilter(lookup_expr='icontains')
     ordering = filters.OrderingFilter(
         fields=('creation_date', 'rating', 'popularity'))
 
     class Meta:
         model = Article
-        fields = {
-            'ordering': ['exact'],
-            'author': ['exact'],
-            'categories': ['exact'],
-            'themes': ['exact'],
-            'headline': ['icontains'],
-            'creation_date': ['gt', 'lt'],
-        }
+        fields = ('ordering', 'author', 'categories', 'themes',  'headline', 'created')
 
 
 class CommentFilterSet(filters.FilterSet):
