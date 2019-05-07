@@ -1,0 +1,10 @@
+Django==2.2
+django-filter==2.1.0
+django-templated-mail==1.1.1
+djangorestframework==3.9.2
+djoser==1.5.1
+mysqlclient==1.4.2.post1
+Pillow==5.4.1
+pkg-resources==0.0.0
+pytz==2019.1
+sqlparse==0.3.0
