@@ -1,9 +1,11 @@
-from rest_framework import generics, status, views
-from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
-from rest_framework.response import Response
 from django.core.exceptions import ObjectDoesNotExist
+from rest_framework import generics, status, views
+from rest_framework.permissions import (IsAuthenticated,
+                                        IsAuthenticatedOrReadOnly)
+from rest_framework.response import Response
 
-from account.api.permissions import IsCurrentUserProfileOrReadOnly
+from account.api.permissions import (IsCurrentUserProfile,
+                                     IsCurrentUserProfileOrReadOnly)
 from account.api.serializers import (BasicPreferenceSerializer,
                                      CategoryPreferenceReadSerializer,
                                      ProfilePreferenceReadSerializer,
@@ -41,7 +43,7 @@ class ProfileFollowers(ProfileUrlMixin, generics.ListAPIView):
 
 class BaseChangeBookmark(views.APIView):
     attr_name = None
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticated, IsCurrentUserProfile)
 
     def post(self, request, *args, **kwargs):
         bookmark, created = getattr(self, self.attr_name).bookmark_set \
@@ -62,8 +64,7 @@ class BaseChangeBookmark(views.APIView):
 
 
 class BaseChangePreference(views.APIView):
-    attr_name = None
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticated, IsCurrentUserProfile)
 
     def post(self, request, *args, **kwargs):
         serializer = BasicPreferenceSerializer(data=request.data)

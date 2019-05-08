@@ -3,6 +3,7 @@ from rest_framework.permissions import (IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
 
+from account.api.permissions import IsCurrentUserProfile
 from account.api.views import BaseChangeBookmark, BaseChangePreference
 from common.views import UrlMixin
 from publication.api.filters import ArticleFilterSet, CommentFilterSet
@@ -76,7 +77,7 @@ class CommentDetail(generics.RetrieveUpdateAPIView):
 
 class BaseMakeVote(views.APIView):
     attr_name = None
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticated, IsCurrentUserProfile)
 
     def post(self, request, *args, **kwargs):
         serializer = BasicVoteSerializer(data=request.data)
