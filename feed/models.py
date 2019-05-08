@@ -1,7 +1,8 @@
 from django.db.models import Subquery
 
 from account.models import Profile
-from publication.models import Article, ArticleQuerySet, Category, Theme
+from publication.models import Article, ArticleQuerySet
+from tags.models import Category, Theme
 
 
 class FeedQuerySet(ArticleQuerySet):

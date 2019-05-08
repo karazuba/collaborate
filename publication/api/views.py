@@ -7,10 +7,9 @@ from publication.api.permissions import IsAuthorOrReadOnly
 from publication.api.serializers import (ArticleListSerializer,
                                          ArticleReadSerializer,
                                          ArticleWriteSerializer,
-                                         CategorySerializer,
                                          CommentCreateSerializer,
-                                         CommentSerializer, ThemeSerializer)
-from publication.models import Article, Category, Comment, Theme
+                                         CommentSerializer)
+from publication.models import Article, Comment
 
 
 class ArticleList(generics.ListCreateAPIView):
@@ -68,22 +67,3 @@ class CommentDetail(generics.RetrieveUpdateAPIView):
 
 class CommentUrlMixin(UrlMixin):
     model_class = Comment
-
-
-class ThemeList(generics.ListCreateAPIView):
-    queryset = Theme.objects.all()
-    serializer_class = ThemeSerializer
-    permission_classes = (IsAuthenticatedOrReadOnly,)
-
-
-class ThemeUrlMixin(UrlMixin):
-    model_class = Theme
-
-
-class CategoryList(generics.ListAPIView):
-    queryset = Category.objects.all()
-    serializer_class = CategorySerializer
-
-
-class CategoryUrlMixin(UrlMixin):
-    model_class = Category

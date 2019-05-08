@@ -11,7 +11,7 @@ from preferences.api.serializers import (BasicPreferenceSerializer,
                                          ThemePreferenceReadSerializer)
 from preferences.models import (CategoryPreference, ProfilePreference,
                                 ThemePreference)
-from publication.api.views import CategoryUrlMixin, ThemeUrlMixin
+from tags.api.views import CategoryUrlMixin, ThemeUrlMixin
 
 
 class BaseChangePreference(views.APIView):

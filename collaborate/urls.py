@@ -14,6 +14,7 @@ api_urls = [
     path('', include('bookmarks.api.urls')),
     path('', include('preferences.api.urls')),
     path('', include('votes.api.urls')),
+    path('', include('tags.api.urls')),
 ]
 
 urlpatterns = [

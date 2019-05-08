@@ -4,25 +4,6 @@ from django.db.models import Count, ExpressionWrapper, F, Q
 from django.db.models.functions import Cast, Now
 
 
-class BaseTag(models.Model):
-    label = models.CharField(max_length=50, blank=False, unique=True)
-    description = models.TextField(blank=True)
-
-    def __str__(self):
-        return f'{str(self.id)} {self.label}'
-
-    class Meta:
-        abstract = True
-
-
-class Theme(BaseTag):
-    pass
-
-
-class Category(BaseTag):
-    pass
-
-
 class BasePublicationQuerySet(models.QuerySet):
     def with_rating(self):
         upvotes = Count('vote', filter=Q(vote__value=True))
@@ -60,8 +41,8 @@ class Article(BasePublication):
     description = models.CharField(max_length=350, blank=True)
     thumbnail = models.ImageField(upload_to='uploads/thumbnails/%Y/%m/%d/',
                                   null=True, blank=True)
-    themes = models.ManyToManyField(to=Theme)
-    categories = models.ManyToManyField(to=Category)
+    themes = models.ManyToManyField(to='tags.Theme')
+    categories = models.ManyToManyField(to='tags.Category')
 
     objects = ArticleQuerySet.as_manager()
 

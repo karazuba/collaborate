@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'bookmarks',
     'preferences',
     'votes',
+    'tags',
 ]
 
 MIDDLEWARE = [

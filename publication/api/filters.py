@@ -1,7 +1,8 @@
 from django_filters import rest_framework as filters
 
 from account.models import Profile
-from publication.models import Article, Category, Comment, Theme
+from publication.models import Article, Comment
+from tags.models import Theme, Category
 
 
 class ArticleFilterSet(filters.FilterSet):

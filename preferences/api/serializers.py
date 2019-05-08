@@ -1,8 +1,8 @@
 from rest_framework import serializers
 
 from preferences.models import CategoryPreference, ThemePreference, ProfilePreference
-from publication.api.serializers.tag import CategorySerializer, ThemeSerializer
-from account.api.serializers.profile import ProfileSerializer
+from tags.api.serializers import CategorySerializer, ThemeSerializer
+from account.api.serializers import ProfileSerializer
 
 
 class BasicPreferenceSerializer(serializers.Serializer):

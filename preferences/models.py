@@ -13,7 +13,7 @@ class BasePreference(models.Model):
 
 
 class ThemePreference(BasePreference):
-    theme = models.ForeignKey(to='publication.Theme', on_delete=models.CASCADE,
+    theme = models.ForeignKey(to='tags.Theme', on_delete=models.CASCADE,
                               related_name='preference_set',
                               related_query_name='preference')
 
@@ -26,7 +26,7 @@ class ThemePreference(BasePreference):
 
 
 class CategoryPreference(BasePreference):
-    category = models.ForeignKey(to='publication.Category', on_delete=models.CASCADE,
+    category = models.ForeignKey(to='tags.Category', on_delete=models.CASCADE,
                                  related_name='preference_set',
                                  related_query_name='preference')
 
