@@ -52,6 +52,31 @@ class Profile(models.Model):
         return f'{str(self.id)} {str(self.user)}'
 
 
+class BaseBookmark(models.Model):
+    profile = models.ForeignKey(to=Profile, on_delete=models.CASCADE)
+    added_datetime = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{str(self.id)} {str(self.profile)}'
+
+    class Meta:
+        abstract = True
+
+
+class ArticleBookmark(BaseBookmark):
+    article = models.ForeignKey(to='publication.Article',
+                                on_delete=models.CASCADE,
+                                related_name='bookmark_set',
+                                related_query_name='bookmark')
+
+    def __str__(self):
+        return f'{super().__str__()} {str(self.article)}'
+
+    class Meta:
+        db_table = 'account_article_bookmarks'
+        unique_together = ('profile', 'article')
+
+
 class BasePreference(models.Model):
     display = models.BooleanField()
     profile = models.ForeignKey(to=Profile, on_delete=models.CASCADE)
@@ -72,7 +97,7 @@ class ThemePreference(BasePreference):
         return f'{super().__str__()} {str(self.theme)}'
 
     class Meta:
-        db_table = 'account_theme_preference'
+        db_table = 'account_theme_preferences'
         unique_together = ('profile', 'theme')
 
 
@@ -85,7 +110,7 @@ class CategoryPreference(BasePreference):
         return f'{super().__str__()} {str(self.category)}'
 
     class Meta:
-        db_table = 'account_category_preference'
+        db_table = 'account_category_preferences'
         unique_together = ('profile', 'category')
 
 
@@ -98,5 +123,5 @@ class ProfilePreference(BasePreference):
         return f'{super().__str__()} {str(self.subject_profile)}'
 
     class Meta:
-        db_table = 'account_profile_preference'
+        db_table = 'account_profile_preferences'
         unique_together = ('profile', 'subject_profile')
