@@ -21,7 +21,7 @@ class ArticleListSerializer(BasePublicationSerializer):
     class Meta:
         model = Article
         fields = ('id', 'headline', 'thumbnail', 'description',
-                  'rating',  'author', 'categories', 'themes', 'creation_date')
+                  'rating',  'author', 'categories', 'themes', 'creation_datetime')
         read_only_fields = fields
 
 
@@ -32,7 +32,7 @@ class ArticleReadSerializer(BasePublicationSerializer):
     class Meta:
         model = Article
         fields = ('id', 'headline', 'thumbnail', 'description', 'body', 'rating',
-                  'author', 'categories', 'themes', 'creation_date', 'update_date')
+                  'author', 'categories', 'themes', 'creation_datetime', 'update_datetime')
         read_only_fields = fields
 
 
@@ -40,16 +40,16 @@ class ArticleWriteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Article
         fields = ('id', 'headline', 'thumbnail', 'description', 'body',
-                  'categories', 'themes', 'creation_date', 'update_date')
+                  'categories', 'themes', 'creation_datetime', 'update_datetime')
 
 
 class CommentSerializer(BasePublicationSerializer):
     class Meta:
         model = Comment
         fields = ('id', 'article_id', 'parent_id', 'author', 'rating', 'body',
-                  'creation_date', 'update_date')
+                  'creation_datetime', 'update_datetime')
         read_only_fields = ('id', 'article_id', 'parent_id', 'author', 'rating',
-                            'creation_date', 'update_date')
+                            'creation_datetime', 'update_datetime')
 
 
 class CurrentArticleDefault(CurrentValueDefault):

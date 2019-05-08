@@ -13,10 +13,10 @@ class ArticleFilterSet(filters.FilterSet):
     themes = filters.ModelMultipleChoiceFilter(field_name='themes',
                                                queryset=Theme.objects.all(),
                                                conjoined=True)
-    created = filters.DateFromToRangeFilter(field_name='creation_date')
+    created = filters.DateFromToRangeFilter(field_name='creation_datetime')
     headline = filters.CharFilter(lookup_expr='icontains')
     ordering = filters.OrderingFilter(
-        fields=('creation_date', 'rating', 'popularity'))
+        fields=('creation_datetime', 'rating', 'popularity'))
 
     class Meta:
         model = Article
@@ -24,7 +24,7 @@ class ArticleFilterSet(filters.FilterSet):
 
 
 class CommentFilterSet(filters.FilterSet):
-    ordering = filters.OrderingFilter(fields=('creation_date', 'rating'))
+    ordering = filters.OrderingFilter(fields=('creation_datetime', 'rating'))
 
     class Meta:
         model = Comment

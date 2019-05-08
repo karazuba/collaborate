@@ -32,7 +32,7 @@ class BasePublicationQuerySet(models.QuerySet):
 
 class ArticleQuerySet(BasePublicationQuerySet):
     def with_popularity(self):
-        hours = Cast(Now() - F('creation_date'), models.FloatField()) \
+        hours = Cast(Now() - F('creation_datetime'), models.FloatField()) \
             / 3600000000 + 1
         return self.annotate(popularity=ExpressionWrapper(F('rating')/hours,
                                                           output_field=models.FloatField()))
@@ -44,8 +44,8 @@ class CommentQuerySet(BasePublicationQuerySet):
 
 class BasePublication(models.Model):
     body = models.TextField(blank=False)
-    creation_date = models.DateTimeField(auto_now_add=True)
-    update_date = models.DateTimeField(null=True, auto_now=True)
+    creation_datetime = models.DateTimeField(auto_now_add=True)
+    update_datetime = models.DateTimeField(null=True, auto_now=True)
     author = models.ForeignKey(to=get_user_model(), on_delete=models.CASCADE)
 
     def __str__(self):
@@ -102,7 +102,7 @@ class ArticleVote(BaseVote):
         return f'{super().__str__()} {str(self.article)}'
 
     class Meta:
-        db_table = 'publication_article_vote'
+        db_table = 'publication_article_votes'
         unique_together = ('user', 'article')
 
 
@@ -115,5 +115,5 @@ class CommentVote(BaseVote):
         return f'{super().__str__()} {str(self.comment)}'
 
     class Meta:
-        db_table = 'publication_comment_vote'
+        db_table = 'publication_comment_votes'
         unique_together = ('user', 'comment')
