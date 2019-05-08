@@ -1,10 +1,8 @@
 from django.urls import path
 
 from publication.api.views import (ArticleDetail, ArticleList, CategoryList,
-                                   ChangeCategoryPreference,
-                                   ChangeThemePreference, CommentDetail,
-                                   CommentsList, MakeArticleVote,
-                                   MakeCommentVote, ThemeList)
+                                   CommentDetail, CommentsList,
+                                   MakeArticleVote, MakeCommentVote, ThemeList)
 
 urlpatterns = [
     path('articles/', ArticleList.as_view()),
@@ -16,9 +14,5 @@ urlpatterns = [
     path('profiles/<int:pk>/votes/comments/<int:comment_pk>/',
          MakeCommentVote.as_view()),
     path('themes/', ThemeList.as_view()),
-    path('profiles/<int:pk>/preferences/themes/<int:theme_pk>/',
-         ChangeThemePreference.as_view()),
     path('categories/', CategoryList.as_view()),
-    path('profiles/<int:pk>/preferences/categories/<int:category_pk>/',
-         ChangeCategoryPreference.as_view()),
 ]

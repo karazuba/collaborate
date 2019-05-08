@@ -4,7 +4,6 @@ from rest_framework.permissions import (IsAuthenticated,
 from rest_framework.response import Response
 
 from account.api.permissions import IsCurrentUserProfile
-from account.api.views import BaseChangeBookmark, BaseChangePreference
 from common.views import UrlMixin
 from publication.api.filters import ArticleFilterSet, CommentFilterSet
 from publication.api.permissions import IsAuthorOrReadOnly
@@ -110,10 +109,6 @@ class ThemeUrlMixin(UrlMixin):
     model_class = Theme
 
 
-class ChangeThemePreference(ThemeUrlMixin, BaseChangePreference):
-    pass
-
-
 class CategoryList(generics.ListAPIView):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
@@ -121,7 +116,3 @@ class CategoryList(generics.ListAPIView):
 
 class CategoryUrlMixin(UrlMixin):
     model_class = Category
-
-
-class ChangeCategoryPreference(CategoryUrlMixin, BaseChangePreference):
-    pass

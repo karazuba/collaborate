@@ -12,6 +12,7 @@ api_urls = [
     path('', include('account.api.urls')),
     path('', include('feed.api.urls')),
     path('', include('bookmarks.api.urls')),
+    path('', include('preferences.api.urls')),
 ]
 
 urlpatterns = [
