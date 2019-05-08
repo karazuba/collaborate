@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'feed',
     'bookmarks',
     'preferences',
+    'votes',
 ]
 
 MIDDLEWARE = [

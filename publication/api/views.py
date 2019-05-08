@@ -1,16 +1,12 @@
-from rest_framework import generics, status, views
-from rest_framework.permissions import (IsAuthenticated,
-                                        IsAuthenticatedOrReadOnly)
-from rest_framework.response import Response
+from rest_framework import generics
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
-from account.api.permissions import IsCurrentUserProfile
 from common.views import UrlMixin
 from publication.api.filters import ArticleFilterSet, CommentFilterSet
 from publication.api.permissions import IsAuthorOrReadOnly
 from publication.api.serializers import (ArticleListSerializer,
                                          ArticleReadSerializer,
                                          ArticleWriteSerializer,
-                                         BasicVoteSerializer,
                                          CategorySerializer,
                                          CommentCreateSerializer,
                                          CommentSerializer, ThemeSerializer)
@@ -70,33 +66,8 @@ class CommentDetail(generics.RetrieveUpdateAPIView):
     permission_classes = (IsAuthenticatedOrReadOnly, IsAuthorOrReadOnly)
 
 
-class BaseMakeVote(views.APIView):
-    attr_name = None
-    permission_classes = (IsAuthenticated, IsCurrentUserProfile)
-
-    def post(self, request, *args, **kwargs):
-        serializer = BasicVoteSerializer(data=request.data)
-        if serializer.is_valid():
-            new_value = serializer.data['value']
-            vote, created = getattr(self, self.attr_name).vote_set \
-                .get_or_create(user=request.user,
-                               defaults={'value': new_value})
-            if not created and vote.value != new_value:
-                vote.delete()
-            return Response(status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class MakeArticleVote(ArticleUrlMixin, BaseMakeVote):
-    pass
-
-
 class CommentUrlMixin(UrlMixin):
     model_class = Comment
-
-
-class MakeCommentVote(CommentUrlMixin, BaseMakeVote):
-    pass
 
 
 class ThemeList(generics.ListCreateAPIView):

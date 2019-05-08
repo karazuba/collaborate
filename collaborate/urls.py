@@ -13,6 +13,7 @@ api_urls = [
     path('', include('feed.api.urls')),
     path('', include('bookmarks.api.urls')),
     path('', include('preferences.api.urls')),
+    path('', include('votes.api.urls')),
 ]
 
 urlpatterns = [
