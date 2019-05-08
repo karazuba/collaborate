@@ -8,8 +8,8 @@ auth_urls = [
 
 api_urls = [
     path('auth/', include(auth_urls)),
-    path('', include('publication.api.urls')),
-    path('', include('account.api.urls')),
+    path('', include('publications.api.urls')),
+    path('', include('accounts.api.urls')),
     path('', include('feed.api.urls')),
     path('', include('bookmarks.api.urls')),
     path('', include('preferences.api.urls')),

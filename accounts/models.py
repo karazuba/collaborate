@@ -4,15 +4,15 @@ from django.db.models import Count, Q
 
 
 class ProfileQuerySet(models.QuerySet):
-    article_upvotes = Count('user__article__vote', distinct=True,
-                            filter=Q(user__article__vote__value=True))
-    article_downvotes = Count('user__article__vote', distinct=True,
-                              filter=Q(user__article__vote__value=False))
+    article_upvotes = Count('article__vote', distinct=True,
+                            filter=Q(article__vote__value=True))
+    article_downvotes = Count('article__vote', distinct=True,
+                              filter=Q(article__vote__value=False))
 
-    comment_upvotes = Count('user__comment__vote', distinct=True,
-                            filter=Q(user__comment__vote__value=True))
-    comment_downvotes = Count('user__comment__vote', distinct=True,
-                              filter=Q(user__comment__vote__value=False))
+    comment_upvotes = Count('comment__vote', distinct=True,
+                            filter=Q(comment__vote__value=True))
+    comment_downvotes = Count('comment__vote', distinct=True,
+                              filter=Q(comment__vote__value=False))
 
     followers_count = Count('preference', distinct=True,
                             filter=Q(preference__display=True))

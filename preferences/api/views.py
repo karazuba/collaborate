@@ -3,8 +3,8 @@ from rest_framework import generics, status, views
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from account.api.permissions import IsCurrentUserProfile
-from account.api.views import ProfileUrlMixin
+from accounts.api.permissions import IsCurrentUserProfile
+from accounts.api.views import ProfileUrlMixin
 from preferences.api.serializers import (BasicPreferenceSerializer,
                                          CategoryPreferenceReadSerializer,
                                          ProfilePreferenceReadSerializer,

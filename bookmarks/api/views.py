@@ -3,12 +3,12 @@ from rest_framework import generics, status, views
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from account.api.permissions import IsCurrentUserProfile
-from account.api.views import ProfileUrlMixin
+from accounts.api.permissions import IsCurrentUserProfile
+from accounts.api.views import ProfileUrlMixin
 from bookmarks.api.filters import ArticleBookmarkFilterSet
 from bookmarks.api.serializers import ArticleBookmarkReadSerializer
 from bookmarks.models import ArticleBookmark
-from publication.api.views import ArticleUrlMixin
+from publications.api.views import ArticleUrlMixin
 
 
 class BaseChangeBookmark(views.APIView):

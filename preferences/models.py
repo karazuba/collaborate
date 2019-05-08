@@ -3,7 +3,7 @@ from django.db import models
 
 class BasePreference(models.Model):
     display = models.BooleanField()
-    profile = models.ForeignKey(to='account.Profile', on_delete=models.CASCADE)
+    profile = models.ForeignKey(to='accounts.Profile', on_delete=models.CASCADE)
 
     def __str__(self):
         return f'{str(self.id)} {str(self.display)} {str(self.profile)}'
@@ -39,7 +39,7 @@ class CategoryPreference(BasePreference):
 
 
 class ProfilePreference(BasePreference):
-    subject_profile = models.ForeignKey(to='account.Profile', on_delete=models.CASCADE,
+    subject_profile = models.ForeignKey(to='accounts.Profile', on_delete=models.CASCADE,
                                         related_name='preference_set',
                                         related_query_name='preference')
 

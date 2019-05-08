@@ -1,9 +1,9 @@
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
-from account.api.permissions import IsCurrentUserProfileOrReadOnly
-from account.api.serializers import ProfileSerializer
-from account.models import Profile
+from accounts.api.permissions import IsCurrentUserProfileOrReadOnly
+from accounts.api.serializers import ProfileSerializer
+from accounts.models import Profile
 from common.views import UrlMixin
 
 

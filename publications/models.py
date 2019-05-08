@@ -1,4 +1,3 @@
-from django.contrib.auth import get_user_model
 from django.db import models
 from django.db.models import Count, ExpressionWrapper, F, Q
 from django.db.models.functions import Cast, Now
@@ -27,7 +26,7 @@ class BasePublication(models.Model):
     body = models.TextField(blank=False)
     creation_datetime = models.DateTimeField(auto_now_add=True)
     update_datetime = models.DateTimeField(null=True, auto_now=True)
-    author = models.ForeignKey(to=get_user_model(), on_delete=models.CASCADE)
+    author = models.ForeignKey(to='accounts.Profile', on_delete=models.CASCADE)
 
     def __str__(self):
         return f'{str(self.id)} {str(self.author)}'

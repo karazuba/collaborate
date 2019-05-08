@@ -2,14 +2,14 @@ from rest_framework import generics
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 from common.views import UrlMixin
-from publication.api.filters import ArticleFilterSet, CommentFilterSet
-from publication.api.permissions import IsAuthorOrReadOnly
-from publication.api.serializers import (ArticleListSerializer,
+from publications.api.filters import ArticleFilterSet, CommentFilterSet
+from publications.api.permissions import IsAuthorOrReadOnly
+from publications.api.serializers import (ArticleListSerializer,
                                          ArticleReadSerializer,
                                          ArticleWriteSerializer,
                                          CommentCreateSerializer,
                                          CommentSerializer)
-from publication.models import Article, Comment
+from publications.models import Article, Comment
 
 
 class ArticleList(generics.ListCreateAPIView):
@@ -23,7 +23,7 @@ class ArticleList(generics.ListCreateAPIView):
         return ArticleWriteSerializer
 
     def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
+        serializer.save(author=self.request.user.profile)
 
 
 class ArticleDetail(generics.RetrieveUpdateAPIView):
@@ -56,7 +56,7 @@ class CommentsList(ArticleUrlMixin, generics.ListCreateAPIView):
         return CommentCreateSerializer
 
     def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
+        serializer.save(author=self.request.user.profile)
 
 
 class CommentDetail(generics.RetrieveUpdateAPIView):

@@ -2,7 +2,7 @@ from django.db import models
 
 
 class BaseBookmark(models.Model):
-    profile = models.ForeignKey(to='account.Profile',
+    profile = models.ForeignKey(to='accounts.Profile',
                                 on_delete=models.CASCADE)
     added_datetime = models.DateTimeField(auto_now_add=True)
 
@@ -14,7 +14,7 @@ class BaseBookmark(models.Model):
 
 
 class ArticleBookmark(BaseBookmark):
-    article = models.ForeignKey(to='publication.Article',
+    article = models.ForeignKey(to='publications.Article',
                                 on_delete=models.CASCADE,
                                 related_name='bookmark_set',
                                 related_query_name='bookmark')

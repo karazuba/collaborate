@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from preferences.models import CategoryPreference, ThemePreference, ProfilePreference
 from tags.api.serializers import CategorySerializer, ThemeSerializer
-from account.api.serializers import ProfileSerializer
+from accounts.api.serializers import ProfileSerializer
 
 
 class BasicPreferenceSerializer(serializers.Serializer):
@@ -28,7 +28,7 @@ class CategoryPreferenceReadSerializer(serializers.ModelSerializer):
 
 
 class ProfilePreferenceReadSerializer(serializers.ModelSerializer):
-    subject_profile = ProfileSerializer
+    subject_profile = ProfileSerializer()
 
     class Meta:
         model = ProfilePreference

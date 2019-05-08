@@ -3,7 +3,7 @@ from django.db import models
 
 class BaseVote(models.Model):
     value = models.BooleanField()
-    profile = models.ForeignKey(to='account.Profile', on_delete=models.CASCADE)
+    profile = models.ForeignKey(to='accounts.Profile', on_delete=models.CASCADE)
 
     def __str__(self):
         return f'{str(self.id)} {str(self.value)} {str(self.profile)}'
@@ -13,7 +13,7 @@ class BaseVote(models.Model):
 
 
 class ArticleVote(BaseVote):
-    article = models.ForeignKey(to='publication.Article', on_delete=models.CASCADE,
+    article = models.ForeignKey(to='publications.Article', on_delete=models.CASCADE,
                                 related_name='vote_set',
                                 related_query_name='vote')
 
@@ -26,7 +26,7 @@ class ArticleVote(BaseVote):
 
 
 class CommentVote(BaseVote):
-    comment = models.ForeignKey(to='publication.Comment', on_delete=models.CASCADE,
+    comment = models.ForeignKey(to='publications.Comment', on_delete=models.CASCADE,
                                 related_name='vote_set',
                                 related_query_name='vote')
 

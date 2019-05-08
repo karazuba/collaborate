@@ -1,13 +1,13 @@
 from rest_framework import serializers
 
-from account.api.serializers import ProfileSerializer
+from accounts.api.serializers import ProfileSerializer
 from common.serializers import CurrentValueDefault
-from publication.models import Article, Comment
+from publications.models import Article, Comment
 from tags.api.serializers import CategorySerializer, ThemeSerializer
 
 
 class BasePublicationSerializer(serializers.ModelSerializer):
-    author = ProfileSerializer(source='author.profile', read_only=True)
+    author = ProfileSerializer(read_only=True)
     rating = serializers.SerializerMethodField()
 
     def get_rating(self, obj):

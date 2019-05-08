@@ -1,11 +1,11 @@
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 
-from account.api.permissions import IsCurrentUserProfile
-from account.api.views import ProfileUrlMixin
+from accounts.api.permissions import IsCurrentUserProfile
+from accounts.api.views import ProfileUrlMixin
 from feed.models import FeedArticle
-from publication.api.filters import ArticleFilterSet
-from publication.api.serializers import ArticleListSerializer
+from publications.api.filters import ArticleFilterSet
+from publications.api.serializers import ArticleListSerializer
 
 
 class BaseArticleFeed:

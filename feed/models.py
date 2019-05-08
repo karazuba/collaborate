@@ -1,7 +1,7 @@
 from django.db.models import Subquery
 
-from account.models import Profile
-from publication.models import Article, ArticleQuerySet
+from accounts.models import Profile
+from publications.models import Article, ArticleQuerySet
 from tags.models import Category, Theme
 
 
@@ -18,13 +18,13 @@ class FeedQuerySet(ArticleQuerySet):
             .values_list('id', flat=True)
         return self.exclude(themes__in=Subquery(ignored_themes)) \
             .exclude(categories__in=Subquery(ignored_categories)) \
-            .exclude(author__profile__in=Subquery(ignored_profiles))
+            .exclude(author__in=Subquery(ignored_profiles))
 
     def filter_profile_follows(self, profile):
         folowed_profiles = Profile.objects.filter(preference__profile=profile,
                                                   preference__display=True) \
             .values_list('id', flat=True)
-        return self.filter(author__profile__in=folowed_profiles)
+        return self.filter(author__in=folowed_profiles)
 
     def filter_tag_follows(self, profile):
         followed_themes = Theme.objects.filter(preference__profile=profile,

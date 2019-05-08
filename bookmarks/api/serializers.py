@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from bookmarks.models import ArticleBookmark
-from publication.api.serializers import ArticleReadSerializer
+from publications.api.serializers import ArticleReadSerializer
 
 class ArticleBookmarkReadSerializer(serializers.ModelSerializer):
     article = ArticleReadSerializer()

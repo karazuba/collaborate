@@ -1,6 +1,6 @@
 from django.urls import path
 
-from publication.api.views import (ArticleDetail, ArticleList, CommentDetail,
+from publications.api.views import (ArticleDetail, ArticleList, CommentDetail,
                                    CommentsList)
 
 urlpatterns = [
