@@ -3,7 +3,7 @@ from rest_framework.permissions import (IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
 
-from account.api.views import BaseChangePreference
+from account.api.views import BaseChangeBookmark, BaseChangePreference
 from common.views import UrlMixin
 from publication.api.filters import ArticleFilterSet, CommentFilterSet
 from publication.api.permissions import IsAuthorOrReadOnly
@@ -43,6 +43,10 @@ class ArticleDetail(generics.RetrieveUpdateAPIView):
 
 class ArticleUrlMixin(UrlMixin):
     model_class = Article
+
+
+class ChangeArticleBookmark(ArticleUrlMixin, BaseChangeBookmark):
+    pass
 
 
 class CommentsList(ArticleUrlMixin, generics.ListCreateAPIView):

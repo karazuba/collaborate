@@ -39,6 +39,28 @@ class ProfileFollowers(ProfileUrlMixin, generics.ListAPIView):
                     profilepreference__display=True)
 
 
+class BaseChangeBookmark(views.APIView):
+    attr_name = None
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request, *args, **kwargs):
+        bookmark, created = getattr(self, self.attr_name).bookmark_set \
+            .get_or_create(profile=request.user.profile)
+        if created:
+            return Response(status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+    def delete(self, request, *args, **kwargs):
+        try:
+            bookmark = getattr(self, self.attr_name).bookmark_set \
+                .filter(profile=request.user.profile).get()
+        except ObjectDoesNotExist:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        bookmark.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
 class BaseChangePreference(views.APIView):
     attr_name = None
     permission_classes = (IsAuthenticated,)
