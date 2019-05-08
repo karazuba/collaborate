@@ -1,11 +1,7 @@
-from django.core.exceptions import ObjectDoesNotExist
-from rest_framework import generics, status, views
-from rest_framework.permissions import (IsAuthenticated,
-                                        IsAuthenticatedOrReadOnly)
-from rest_framework.response import Response
+from rest_framework import generics
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
-from account.api.permissions import (IsCurrentUserProfile,
-                                     IsCurrentUserProfileOrReadOnly)
+from account.api.permissions import IsCurrentUserProfileOrReadOnly
 from account.api.serializers import ProfileSerializer
 from account.models import Profile
 from common.views import UrlMixin
