@@ -47,18 +47,18 @@ class BaseChangePreference(views.APIView):
         serializer = BasicPreferenceSerializer(data=request.data)
         if serializer.is_valid():
             new_display = serializer.data['display']
-            preference, created = getattr(self, self.attr_name).preference_set. \
-                get_or_create(profile=request.user.profile,
+            preference, created = getattr(self, self.attr_name).preference_set \
+                .get_or_create(profile=request.user.profile,
                               defaults={'display': new_display})
-            if not created and preference.display != new_display:
-                return Response(status=status.HTTP_409_CONFLICT)
-            return Response(status=status.HTTP_200_OK)
+            if created or preference.display == new_display:
+                return Response(status=status.HTTP_200_OK)
+            return Response(status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, *args, **kwargs):
         try:
-            preference = getattr(self, self.attr_name).preference_set. \
-                filter(profile=request.user.profile).get()
+            preference = getattr(self, self.attr_name).preference_set \
+                .filter(profile=request.user.profile).get()
         except ObjectDoesNotExist:
             return Response(status=status.HTTP_400_BAD_REQUEST)
         preference.delete()
