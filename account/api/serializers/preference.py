@@ -14,7 +14,7 @@ class ThemePreferenceReadSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ThemePreference
-        fields = ('profile', 'theme', 'display')
+        fields = ('profile_id', 'theme', 'display')
         read_only_fields = fields
 
 
@@ -23,7 +23,7 @@ class CategoryPreferenceReadSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CategoryPreference
-        fields = ('profile', 'category', 'display')
+        fields = ('profile_id', 'category', 'display')
         read_only_fields = fields
 
 
@@ -32,4 +32,4 @@ class ProfilePreferenceReadSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProfilePreference
-        fields = ('profile', 'subject_profile', 'display')
+        fields = ('profile_id', 'subject_profile', 'display')
