@@ -11,6 +11,7 @@ api_urls = [
     path('', include('publication.api.urls')),
     path('', include('account.api.urls')),
     path('', include('feed.api.urls')),
+    path('', include('bookmarks.api.urls')),
 ]
 
 urlpatterns = [

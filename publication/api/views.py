@@ -46,10 +46,6 @@ class ArticleUrlMixin(UrlMixin):
     model_class = Article
 
 
-class ChangeArticleBookmark(ArticleUrlMixin, BaseChangeBookmark):
-    pass
-
-
 class CommentsList(ArticleUrlMixin, generics.ListCreateAPIView):
     permission_classes = (IsAuthenticatedOrReadOnly,)
     filter_class = CommentFilterSet
