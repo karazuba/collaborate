@@ -1,9 +1,9 @@
 from rest_framework import serializers
 
-from account.api.serializers.profile import ProfileSerializer
+from account.api.serializers import ProfileSerializer
 from common.serializers import CurrentValueDefault
-from publication.api.serializers.tag import CategorySerializer, ThemeSerializer
 from publication.models import Article, Comment
+from tags.api.serializers import CategorySerializer, ThemeSerializer
 
 
 class BasePublicationSerializer(serializers.ModelSerializer):
