@@ -17,7 +17,8 @@ class BaseChangeBookmark(views.APIView):
 
     def post(self, request, *args, **kwargs):
         bookmark, created = getattr(self, self.attr_name).bookmark_set \
-            .get_or_create(profile=request.user.profile)
+            .get_or_create(profile=request.user.profile,
+                           defaults={'profile': request.user.profile})
         if created:
             return Response(status=status.HTTP_200_OK)
         return Response(status=status.HTTP_400_BAD_REQUEST)
@@ -37,6 +38,7 @@ class ChangeArticleBookmark(ArticleUrlMixin, BaseChangeBookmark):
 
 
 class ArticleBookmarkList(ProfileUrlMixin, generics.ListAPIView):
+    url_kwarg = 'pk'
     serializer_class = ArticleBookmarkReadSerializer
     permission_classes = (IsAuthenticated, IsCurrentUserProfile)
     filterset_class = ArticleBookmarkFilterSet
