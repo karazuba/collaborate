@@ -14,9 +14,9 @@ urlpatterns = [
     path('profiles/<int:profile_pk>/preferences/profiles/',
          ProfilePreferenceList.as_view()),
     path('profiles/<int:pk>/preferences/themes/<int:theme_pk>/',
-         ChangeThemePreference.as_view()),
+         ChangeThemePreference.as_view(), name='theme-preference-change'),
     path('profiles/<int:pk>/preferences/categories/<int:category_pk>/',
-         ChangeCategoryPreference.as_view()),
+         ChangeCategoryPreference.as_view(), name='category-preference-change'),
     path('profiles/<int:pk>/preferences/profiles/<int:profile_pk>/',
-         ChangeProfilePreference.as_view()),
+         ChangeProfilePreference.as_view(), name='profile-preference-change'),
 ]
