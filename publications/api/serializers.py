@@ -6,15 +6,8 @@ from publications.models import Article, Comment
 from tags.api.serializers import CategorySerializer, ThemeSerializer
 
 
-class BasePublicationSerializer(serializers.ModelSerializer):
+class ArticleListSerializer(serializers.ModelSerializer):
     author = ProfileSerializer(read_only=True)
-    rating = serializers.SerializerMethodField()
-
-    def get_rating(self, obj):
-        return getattr(obj, 'rating', None)
-
-
-class ArticleListSerializer(BasePublicationSerializer):
     themes = ThemeSerializer(many=True, read_only=True)
     categories = CategorySerializer(many=True, read_only=True)
 
@@ -25,7 +18,8 @@ class ArticleListSerializer(BasePublicationSerializer):
         read_only_fields = fields
 
 
-class ArticleReadSerializer(BasePublicationSerializer):
+class ArticleReadSerializer(serializers.ModelSerializer):
+    author = ProfileSerializer(read_only=True)
     themes = ThemeSerializer(many=True, read_only=True)
     categories = CategorySerializer(many=True, read_only=True)
 
@@ -43,7 +37,9 @@ class ArticleWriteSerializer(serializers.ModelSerializer):
                   'categories', 'themes', 'creation_datetime', 'update_datetime')
 
 
-class CommentSerializer(BasePublicationSerializer):
+class CommentSerializer(serializers.ModelSerializer):
+    author = ProfileSerializer(read_only=True)
+
     class Meta:
         model = Comment
         fields = ('id', 'article_id', 'parent_id', 'author', 'rating', 'body',

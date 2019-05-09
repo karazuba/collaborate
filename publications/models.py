@@ -4,17 +4,18 @@ from django.db.models.functions import Cast, Now
 
 
 class BasePublicationQuerySet(models.QuerySet):
+    upvotes = Count('vote', filter=Q(vote__value=True))
+    downvotes = Count('vote', filter=Q(vote__value=False))
+
     def with_rating(self):
-        upvotes = Count('vote', filter=Q(vote__value=True))
-        downvotes = Count('vote', filter=Q(vote__value=False))
-        return self.annotate(rating=upvotes-downvotes)
+        return self.annotate(_rating=self.upvotes-self.downvotes)
 
 
 class ArticleQuerySet(BasePublicationQuerySet):
     def with_popularity(self):
         hours = Cast(Now() - F('creation_datetime'), models.FloatField()) \
             / 3600000000 + 1
-        return self.annotate(popularity=ExpressionWrapper(F('rating')/hours,
+        return self.annotate(popularity=ExpressionWrapper(F('_rating')/hours,
                                                           output_field=models.FloatField()))
 
 
@@ -45,6 +46,12 @@ class Article(BasePublication):
 
     objects = ArticleQuerySet.as_manager()
 
+    @property
+    def rating(self):
+        return getattr(self, '_rating', Article.objects.filter(id=self.id)
+                       .aggregate(rating=BasePublicationQuerySet.upvotes
+                                  - BasePublicationQuerySet.downvotes)['rating'])
+
     def __str__(self):
         return f'{super().__str__()} {self.headline}'
 
@@ -57,6 +64,12 @@ class Comment(BasePublication):
                                related_query_name='reply')
 
     objects = CommentQuerySet.as_manager()
+
+    @property
+    def rating(self):
+        return getattr(self, '_rating', Comment.objects.filter(id=self.id)
+                       .aggregate(rating=BasePublicationQuerySet.upvotes
+                                  - BasePublicationQuerySet.downvotes)['rating'])
 
     def __str__(self):
         return super().__str__()
