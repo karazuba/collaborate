@@ -1,44 +1,35 @@
-from django.db.models import Subquery
+from django.db.models import Q, Subquery
 
-from accounts.models import Profile
 from publications.models import Article, ArticleQuerySet
-from tags.models import Category, Theme
 
 
-class FeedQuerySet(ArticleQuerySet):
+class ArticleFeedQuerySet(ArticleQuerySet):
     def exclude_preferences(self, profile):
-        ignored_themes = Theme.objects.filter(preference__profile=profile,
-                                              preference__display=False) \
-            .values_list('id', flat=True)
-        ignored_categories = Category.objects.filter(preference__profile=profile,
-                                                     preference__display=False) \
-            .values_list('id', flat=True)
-        ignored_profiles = Profile.objects.filter(preference__profile=profile,
-                                                  preference__display=False) \
-            .values_list('id', flat=True)
-        return self.exclude(themes__in=Subquery(ignored_themes)) \
-            .exclude(categories__in=Subquery(ignored_categories)) \
-            .exclude(author__in=Subquery(ignored_profiles))
+        ignored_themes = Q(themes__preference__profile=profile,
+                           themes__preference__display=False)
+        ignored_categories = Q(categories__preference__profile=profile,
+                               categories__preference__display=False)
+        ignored_profiles = Q(author__preference__profile=profile,
+                             author__preference__display=False)
+        return self.exclude(ignored_themes) \
+            .exclude(ignored_categories) \
+            .exclude(ignored_profiles)
 
     def filter_profile_follows(self, profile):
-        folowed_profiles = Profile.objects.filter(preference__profile=profile,
-                                                  preference__display=True) \
-            .values_list('id', flat=True)
-        return self.filter(author__in=folowed_profiles)
+        folowed_profiles = Q(author__preference__profile=profile,
+                             author__preference__display=True)
+        return self.filter(folowed_profiles)
 
     def filter_tag_follows(self, profile):
-        followed_themes = Theme.objects.filter(preference__profile=profile,
-                                               preference__display=True) \
-            .values_list('id', flat=True)
-        followed_categories = Category.objects.filter(preference__profile=profile,
-                                                      preference__display=True) \
-            .values_list('id', flat=True)
-        return self.filter(themes__in=Subquery(followed_themes),
-                           categories__in=Subquery(followed_categories))
+        followed_themes = Q(themes__preference__profile=profile,
+                            themes__preference__display=True)
+        followed_categories = Q(categories__preference__profile=profile,
+                                categories__preference__display=True)
+        return self.filter(followed_themes | followed_categories)
 
 
 class FeedArticle(Article):
-    objects = FeedQuerySet.as_manager()
+    objects = ArticleFeedQuerySet.as_manager()
 
     class Meta:
         proxy = True
