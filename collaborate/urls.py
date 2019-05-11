@@ -15,6 +15,7 @@ api_urls = [
     path('', include('preferences.api.urls')),
     path('', include('votes.api.urls')),
     path('', include('tags.api.urls')),
+    path('', include('recommendations.api.urls')),
 ]
 
 urlpatterns = [
