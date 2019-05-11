@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'preferences',
     'votes',
     'tags',
+    'recommendations',
 ]
 
 MIDDLEWARE = [
