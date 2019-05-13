@@ -1,9 +1,8 @@
 import pytest
-from django.core.exceptions import ObjectDoesNotExist
 from model_mommy import mommy
 
-from recommendations.models import ThemeRecommendation
-from recommendations.services import recommendation_task
+from preferences.models import ThemePreference
+from recommendations.services import ThemeRecommendationService
 
 
 @pytest.mark.django_db
@@ -34,10 +33,10 @@ class TestThemeRecommendationService:
         for p, t in match + mismatch:
             t.preference_set.get(profile=p).delete()
 
-        recommendation_task()
+        qs = ThemePreference.objects.all()
+        recommendations = ThemeRecommendationService(qs).recommend()
 
         for p, t in match:
-            assert ThemeRecommendation.objects.filter(profile=p, theme=t).get()
+            assert t.id in map(lambda r: r[0], recommendations[p.id])
         for p, t in mismatch:
-            with pytest.raises(ObjectDoesNotExist):
-                ThemeRecommendation.objects.filter(profile=p, theme=t).get()
+            assert t.id not in map(lambda r: r[0], recommendations[p.id])
