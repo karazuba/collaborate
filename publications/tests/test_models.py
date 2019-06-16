@@ -39,7 +39,7 @@ class TestArticleModel:
 
 
 @pytest.mark.django_db
-class TestCommenteModel:
+class TestCommentModel:
 
     def test_rating(self, profile_factory):
         profile = profile_factory.get()
