@@ -7,8 +7,10 @@ class BasePublicationQuerySet(models.QuerySet):
     upvotes = Count('vote', filter=Q(vote__value=True))
     downvotes = Count('vote', filter=Q(vote__value=False))
 
+    rating = upvotes - downvotes
+
     def with_rating(self):
-        return self.annotate(_rating=self.upvotes-self.downvotes)
+        return self.annotate(_rating=self.rating)
 
 
 class ArticleQuerySet(BasePublicationQuerySet):
@@ -49,8 +51,7 @@ class Article(BasePublication):
     @property
     def rating(self):
         return getattr(self, '_rating', Article.objects.filter(id=self.id)
-                       .aggregate(rating=BasePublicationQuerySet.upvotes
-                                  - BasePublicationQuerySet.downvotes)['rating'])
+                       .aggregate(rating=BasePublicationQuerySet.rating)['rating'])
 
     def __str__(self):
         return f'{super().__str__()} {self.headline}'
@@ -68,8 +69,7 @@ class Comment(BasePublication):
     @property
     def rating(self):
         return getattr(self, '_rating', Comment.objects.filter(id=self.id)
-                       .aggregate(rating=BasePublicationQuerySet.upvotes
-                                  - BasePublicationQuerySet.downvotes)['rating'])
+                       .aggregate(rating=BasePublicationQuerySet.rating)['rating'])
 
     def __str__(self):
         return super().__str__()
