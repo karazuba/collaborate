@@ -9,17 +9,21 @@ class ProfileQuerySet(models.QuerySet):
     article_downvotes = Count('article__vote', distinct=True,
                               filter=Q(article__vote__value=False))
 
+    article_rating = article_upvotes - article_downvotes
+
     comment_upvotes = Count('comment__vote', distinct=True,
                             filter=Q(comment__vote__value=True))
     comment_downvotes = Count('comment__vote', distinct=True,
                               filter=Q(comment__vote__value=False))
 
+    comment_rating = comment_upvotes - comment_downvotes
+
     followers_count = Count('preference', distinct=True,
                             filter=Q(preference__display=True))
 
     def with_rating(self):
-        return self.annotate(_article_rating=self.article_upvotes - self.article_downvotes,
-                             _comment_rating=self.comment_upvotes - self.comment_downvotes)
+        return self.annotate(_article_rating=self.article_rating,
+                             _comment_rating=self.comment_rating)
 
     def with_followers_count(self):
         return self.annotate(_followers_count=self.followers_count)
@@ -34,14 +38,12 @@ class Profile(models.Model):
     @property
     def article_rating(self):
         return getattr(self, '_article_rating', Profile.objects.filter(id=self.id)
-                       .aggregate(article_rating=ProfileQuerySet.article_upvotes
-                                  - ProfileQuerySet.article_downvotes)['article_rating'])
+                       .aggregate(article_rating=ProfileQuerySet.article_rating)['article_rating'])
 
     @property
     def comment_rating(self):
         return getattr(self, '_comment_rating', Profile.objects.filter(id=self.id)
-                       .aggregate(comment_rating=ProfileQuerySet.comment_upvotes
-                                  - ProfileQuerySet.comment_downvotes)['comment_rating'])
+                       .aggregate(comment_rating=ProfileQuerySet.comment_rating)['comment_rating'])
 
     @property
     def followers_count(self):

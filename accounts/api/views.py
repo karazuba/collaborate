@@ -1,5 +1,7 @@
 from rest_framework import generics
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.response import Response
+from rest_framework.permissions import (IsAuthenticated,
+                                        IsAuthenticatedOrReadOnly)
 
 from accounts.api.permissions import IsCurrentUserProfileOrReadOnly
 from accounts.api.serializers import ProfileSerializer
@@ -10,6 +12,15 @@ from common.views import UrlMixin
 class ProfileList(generics.ListAPIView):
     queryset = Profile.objects.with_rating().with_followers_count()
     serializer_class = ProfileSerializer
+
+
+class ProfileCurrent(generics.RetrieveAPIView):
+    queryset = Profile.objects.with_rating().with_followers_count()
+    serializer_class = ProfileSerializer
+    permission_classes = (IsAuthenticated,)
+
+    def get_object(self):
+        return self.request.user.profile
 
 
 class ProfileDetail(generics.RetrieveUpdateAPIView):
