@@ -1,7 +1,9 @@
 from rest_framework import generics
+
 from rest_framework.response import Response
 from rest_framework.permissions import (IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
+
 
 from accounts.api.permissions import IsCurrentUserProfileOrReadOnly
 from accounts.api.serializers import ProfileSerializer
